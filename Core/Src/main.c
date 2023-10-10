@@ -50,8 +50,6 @@ TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim16;
 
 /* USER CODE BEGIN PV */
-uint8_t heart[] = {0, 102, 255, 255, 255, 126, 60, 24};
-uint8_t doubleHeart[] = {0, 102, 255, 255, 255, 126, 60, 24, 24, 60, 126, 255, 255, 255, 102, 0};
 
 uint8_t dataRdy = 0;
 int buttonsPressed[NUM_BUTTONS];
@@ -73,7 +71,19 @@ static void MX_TIM16_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void setTimerPeriod(TIM_HandleTypeDef *timerToSet, int periodMs){
+	uint32_t baseClockFreq = HAL_RCC_GetHCLKFreq();
+	uint32_t frequencyMs = 1000 / periodMs;
+	uint32_t tickRate = baseClockFreq / timerToSet->Init.Prescaler;
+
+
+	uint32_t countPeriod = tickRate / frequencyMs;
+	__HAL_TIM_SET_AUTORELOAD(timerToSet, countPeriod - 1);
+}
+
+
 void handleTetrisTimerTick(){
+
 	if(gameOverFlag){
 
 		if(!gameOverTetrisAnimation()){
@@ -81,13 +91,15 @@ void handleTetrisTimerTick(){
 		}else{
 			initTetrisGame();
 			setDisplayFromBuf(curRenderedBoard);
+			setTimerPeriod(&htim7, TETRIS_TICK_MS);
 			gameOverFlag = 0;
 		}
-				return;
+		return;
 	}
 
 	if(handleTetrisTick() == gameOver){
 		gameOverFlag = 1;
+		setTimerPeriod(&htim7, GAME_OVER_MS);
 	}
 
 	setDisplayFromBuf(curRenderedBoard);
@@ -147,23 +159,23 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  if(dataRdy){
-		  for(int i = 0; i < NUM_BUTTONS; i++){
-			  if(buttonsPressed[i]){
-				  enum gameSignal sig = handleTetrisUserEvent(buttonBindings[i]);
-				  setDisplayFromBuf(curRenderedBoard);
-				  dataRdy = 0;
-
-				  if(sig == skipTimer){
-					  htim7.Instance->CNT = 0;
-					  handleTetrisTimerTick();
-				  }
-			  }
-		  }
-
+	  if(!dataRdy || gameOverFlag){
+		  continue;
 	  }
 
-  }
+	  for(int i = 0; i < NUM_BUTTONS; i++){
+		  if(buttonsPressed[i]){
+			  enum gameSignal sig = handleTetrisUserEvent(buttonBindings[i]);
+			  setDisplayFromBuf(curRenderedBoard);
+			  dataRdy = 0;
+
+			  if(sig == skipTimer){
+				  htim7.Instance->CNT = 0;
+				  handleTetrisTimerTick();
+			  }
+		  }
+	  }
+	}
   /* USER CODE END 3 */
 }
 
@@ -264,7 +276,6 @@ static void MX_TIM6_Init(void)
   /* USER CODE BEGIN TIM6_Init 0 */
 
   /* USER CODE END TIM6_Init 0 */
-
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
   /* USER CODE BEGIN TIM6_Init 1 */
