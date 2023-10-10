@@ -1,0 +1,10 @@
+Debug/
+Drivers/
+Core/Startup
+.cproject
+.mxproject
+.project
+.settings/
+STM32G431RBTX_FLASH.ld
+mTetrisPort Debug.launch
+mTetrisPort.ioc
