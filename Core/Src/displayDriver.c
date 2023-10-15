@@ -5,7 +5,7 @@
  *      Author: daniel
  */
 
-#include "stm32g4xx_hal.h"
+#include "stm32f0xx_hal.h"
 #include "string.h"
 
 #include "displayDriver.h"
@@ -64,21 +64,22 @@ bool drawLine(int display, uint8_t line, uint8_t lineNum){
 		return false;
 	}
 
-	uint8_t lineByte = 1 << lineNum;
-	lineByte = ~lineByte;
+	uint8_t lineSelect = 1 << lineNum;
+	uint8_t lineContent = ~line;
 
 	if(display == 0){
 		HAL_GPIO_WritePin(SPI1_CS1_GPIO_Port, SPI1_CS1_Pin, GPIO_PIN_RESET);
 
-		HAL_SPI_Transmit(&hspi1, &lineByte, 1, 100);
-		HAL_SPI_Transmit(&hspi1, &line, 1, 100);
+		HAL_SPI_Transmit(&hspi1, &lineSelect, 1, 100);
+		HAL_SPI_Transmit(&hspi1, &lineContent, 1, 100);
 
 		HAL_GPIO_WritePin(SPI1_CS1_GPIO_Port, SPI1_CS1_Pin, GPIO_PIN_SET);
 	}else if(display == 1){
 		HAL_GPIO_WritePin(SPI1_CS2_GPIO_Port, SPI1_CS2_Pin, GPIO_PIN_RESET);
 
-		HAL_SPI_Transmit(&hspi1, &lineByte, 1, 100);
-		HAL_SPI_Transmit(&hspi1, &line, 1, 100);
+		HAL_SPI_Transmit(&hspi1, &lineSelect, 1, 100);
+		HAL_SPI_Transmit(&hspi1, &lineContent, 1, 100);
+
 
 		HAL_GPIO_WritePin(SPI1_CS2_GPIO_Port, SPI1_CS2_Pin, GPIO_PIN_SET);
 	}

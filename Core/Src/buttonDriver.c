@@ -5,7 +5,7 @@
  *      Author: daniel
  */
 
-#include "stm32g4xx_hal.h"
+#include "stm32f0xx_hal.h"
 #include "main.h"
 #include "buttonDriver.h"
 

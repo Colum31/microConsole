@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32g4xx_hal.h"
+#include "stm32f0xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,36 +57,24 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define B1_Pin GPIO_PIN_13
-#define B1_GPIO_Port GPIOC
-#define LPUART1_TX_Pin GPIO_PIN_2
-#define LPUART1_TX_GPIO_Port GPIOA
-#define LPUART1_RX_Pin GPIO_PIN_3
-#define LPUART1_RX_GPIO_Port GPIOA
-#define SPI1_CLK_Pin GPIO_PIN_5
-#define SPI1_CLK_GPIO_Port GPIOA
-#define SPI1_MOSI_Pin GPIO_PIN_7
-#define SPI1_MOSI_GPIO_Port GPIOA
-#define ButtonLeft_Pin GPIO_PIN_10
-#define ButtonLeft_GPIO_Port GPIOB
-#define SPI1_CS2_Pin GPIO_PIN_7
-#define SPI1_CS2_GPIO_Port GPIOC
-#define ButtonUp_Pin GPIO_PIN_8
-#define ButtonUp_GPIO_Port GPIOA
+#define SPI1_CS1_Pin GPIO_PIN_0
+#define SPI1_CS1_GPIO_Port GPIOB
+#define SPI1_CS2_Pin GPIO_PIN_1
+#define SPI1_CS2_GPIO_Port GPIOB
+#define ButtonF1_Pin GPIO_PIN_8
+#define ButtonF1_GPIO_Port GPIOA
+#define ButtonLeft_Pin GPIO_PIN_9
+#define ButtonLeft_GPIO_Port GPIOA
 #define ButtonDown_Pin GPIO_PIN_10
 #define ButtonDown_GPIO_Port GPIOA
-#define T_SWDIO_Pin GPIO_PIN_13
-#define T_SWDIO_GPIO_Port GPIOA
-#define T_SWCLK_Pin GPIO_PIN_14
-#define T_SWCLK_GPIO_Port GPIOA
-#define T_SWO_Pin GPIO_PIN_3
-#define T_SWO_GPIO_Port GPIOB
-#define ButtonMid_Pin GPIO_PIN_4
-#define ButtonMid_GPIO_Port GPIOB
-#define ButtonRight_Pin GPIO_PIN_5
+#define ButtonMid_Pin GPIO_PIN_11
+#define ButtonMid_GPIO_Port GPIOA
+#define ButtonUp_Pin GPIO_PIN_12
+#define ButtonUp_GPIO_Port GPIOA
+#define ButtonF2_Pin GPIO_PIN_6
+#define ButtonF2_GPIO_Port GPIOB
+#define ButtonRight_Pin GPIO_PIN_7
 #define ButtonRight_GPIO_Port GPIOB
-#define SPI1_CS1_Pin GPIO_PIN_6
-#define SPI1_CS1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
