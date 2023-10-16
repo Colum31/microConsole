@@ -23,7 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "displayDriver.h"
 #include "buttonDriver.h"
-#include "tetrisRunner.h"
+#include "gameWrapper.h"
 #include "string.h"
 /* USER CODE END Includes */
 
@@ -56,6 +56,9 @@ char buttonBindings[NUM_BUTTONS] = {BINDING_UP, BINDING_LEFT, BINDING_ROTATE_RIG
 int gameOverFlag = 0;
 int linePos = 0;
 
+struct game *curGame;
+int curBoard[BOARDSIZE];
+
 TIM_HandleTypeDef *tickTimer = &htim14;
 TIM_HandleTypeDef *buttonTimer = &htim16;
 TIM_HandleTypeDef *displayTimer = &htim17;
@@ -85,26 +88,26 @@ void setTimerPeriod(TIM_HandleTypeDef *timerToSet, int periodMs){
 }
 
 
-void handleTetrisTimerTick(){
+void handleTimerTick(){
 	if(gameOverFlag){
 
-		if(!gameOverTetrisAnimation()){
-			setDisplayFromBuf(curRenderedBoard);
+		if(!curGame->gameOverAnimation()){
+			setDisplayFromBuf(curBoard);
 		}else{
-			initTetrisGame();
-			setDisplayFromBuf(curRenderedBoard);
-			setTimerPeriod(tickTimer, TETRIS_TICK_MS);
+			setDisplayFromBuf(curBoard);
+			setTimerPeriod(tickTimer, curGame->tickMs);
+			setGame(curGame);
 			gameOverFlag = 0;
 		}
 				return;
 	}
 
-	if(handleTetrisTick() == gameOver){
+	if(curGame->handleTick() == gameOver){
 		gameOverFlag = 1;
 		setTimerPeriod(tickTimer, GAME_OVER_MS);
 	}
 
-	setDisplayFromBuf(curRenderedBoard);
+	setDisplayFromBuf(curBoard);
 }
 /* USER CODE END 0 */
 
@@ -141,13 +144,12 @@ int main(void)
   MX_TIM16_Init();
   MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
-
+  curGame = initGameStructs(&curBoard);
+  setGame(curGame);
 
   initDisplay();
   initDrivenButtons();
   displayInterruptHandler();
-  initTetrisGame();
-  setDisplayFromBuf(curRenderedBoard);
 
   HAL_TIM_Base_Start_IT(&htim14);
   HAL_TIM_Base_Start_IT(&htim16);
@@ -168,13 +170,13 @@ int main(void)
 
 	 	  for(int i = 0; i < NUM_BUTTONS; i++){
 	 		  if(buttonsPressed[i]){
-	 			  enum gameSignal sig = handleTetrisUserEvent(buttonBindings[i]);
-	 			  setDisplayFromBuf(curRenderedBoard);
+	 			  enum gameSignal sig = curGame->handlePlayerInput(buttonBindings[i]);
+	 			  setDisplayFromBuf(curBoard);
 	 			  dataRdy = 0;
 
 	 			  if(sig == skipTimer){
 	 				  tickTimer->Instance->CNT = 0;
-	 				  handleTetrisTimerTick();
+	 				  handleTimerTick();
 	 			  }
 	 		  }
 	 	  }
@@ -406,7 +408,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	}
 
 	if(htim == tickTimer){
-		handleTetrisTimerTick();
+		handleTimerTick();
 	}
 
 	if(htim == buttonTimer){
