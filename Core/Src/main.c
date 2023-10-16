@@ -74,6 +74,17 @@ static void MX_TIM17_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void setTimerPeriod(TIM_HandleTypeDef *timerToSet, int periodMs){
+	uint32_t baseClockFreq = HAL_RCC_GetHCLKFreq();
+	uint32_t frequencyMs = 1000 / periodMs;
+	uint32_t tickRate = baseClockFreq / timerToSet->Init.Prescaler;
+
+
+	uint32_t countPeriod = tickRate / frequencyMs;
+	__HAL_TIM_SET_AUTORELOAD(timerToSet, countPeriod - 1);
+}
+
+
 void handleTetrisTimerTick(){
 	if(gameOverFlag){
 
@@ -82,6 +93,7 @@ void handleTetrisTimerTick(){
 		}else{
 			initTetrisGame();
 			setDisplayFromBuf(curRenderedBoard);
+			setTimerPeriod(tickTimer, TETRIS_TICK_MS);
 			gameOverFlag = 0;
 		}
 				return;
@@ -89,6 +101,7 @@ void handleTetrisTimerTick(){
 
 	if(handleTetrisTick() == gameOver){
 		gameOverFlag = 1;
+		setTimerPeriod(tickTimer, GAME_OVER_MS);
 	}
 
 	setDisplayFromBuf(curRenderedBoard);
@@ -149,21 +162,23 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  if(dataRdy){
-	  		  for(int i = 0; i < NUM_BUTTONS; i++){
-	  			  if(buttonsPressed[i]){
-	  				  enum gameSignal sig = handleTetrisUserEvent(buttonBindings[i]);
-	  				  setDisplayFromBuf(curRenderedBoard);
-	  				  dataRdy = 0;
+	  if(!dataRdy || gameOverFlag){
+	 		  continue;
+	 	  }
 
-	  				  if(sig == skipTimer){
-	  					  tickTimer->Instance->CNT = 0;
-	  					  handleTetrisTimerTick();
-	  				  }
-	  			  }
-	  		  }
+	 	  for(int i = 0; i < NUM_BUTTONS; i++){
+	 		  if(buttonsPressed[i]){
+	 			  enum gameSignal sig = handleTetrisUserEvent(buttonBindings[i]);
+	 			  setDisplayFromBuf(curRenderedBoard);
+	 			  dataRdy = 0;
 
-	  	  }
+	 			  if(sig == skipTimer){
+	 				  tickTimer->Instance->CNT = 0;
+	 				  handleTetrisTimerTick();
+	 			  }
+	 		  }
+	 	  }
+
 
   }
   /* USER CODE END 3 */
