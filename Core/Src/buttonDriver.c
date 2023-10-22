@@ -20,8 +20,8 @@ struct buttonState{
 struct buttonState drivenButtons[NUM_BUTTONS];
 
 void initDrivenButtons(){
-	int buttonPins[NUM_BUTTONS] = {ButtonUp_Pin, ButtonLeft_Pin, ButtonMid_Pin, ButtonRight_Pin, ButtonDown_Pin};
-	GPIO_TypeDef * buttonGPIOPorts[NUM_BUTTONS] = {ButtonUp_GPIO_Port, ButtonLeft_GPIO_Port, ButtonMid_GPIO_Port, ButtonRight_GPIO_Port, ButtonDown_GPIO_Port};
+	int buttonPins[NUM_BUTTONS] = {ButtonUp_Pin, ButtonLeft_Pin, ButtonMid_Pin, ButtonRight_Pin, ButtonDown_Pin, ButtonF1_Pin, ButtonF2_Pin};
+	GPIO_TypeDef * buttonGPIOPorts[NUM_BUTTONS] = {ButtonUp_GPIO_Port, ButtonLeft_GPIO_Port, ButtonMid_GPIO_Port, ButtonRight_GPIO_Port, ButtonDown_GPIO_Port, ButtonF1_GPIO_Port, ButtonF2_GPIO_Port};
 
 
 	for(int i = 0; i < NUM_BUTTONS; i++){

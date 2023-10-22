@@ -52,7 +52,7 @@ TIM_HandleTypeDef htim17;
 /* USER CODE BEGIN PV */
 uint8_t dataRdy = 0;
 int buttonsPressed[NUM_BUTTONS];
-char buttonBindings[NUM_BUTTONS] = {BINDING_UP, BINDING_LEFT, BINDING_ROTATE_RIGHT, BINDING_RIGHT, BINDING_DROP};
+char buttonBindings[NUM_BUTTONS] = {BINDING_UP, BINDING_LEFT, BINDING_ROTATE_RIGHT, BINDING_RIGHT, BINDING_DOWN};
 int gameOverFlag = 0;
 int linePos = 0;
 
@@ -95,8 +95,8 @@ void handleTimerTick(){
 			setDisplayFromBuf(curBoard);
 		}else{
 			setDisplayFromBuf(curBoard);
-			setTimerPeriod(tickTimer, curGame->tickMs);
 			setGame(curGame);
+			setTimerPeriod(tickTimer, curGame->tickMs);
 			gameOverFlag = 0;
 		}
 				return;
@@ -168,8 +168,17 @@ int main(void)
 	 		  continue;
 	 	  }
 
-	 	  for(int i = 0; i < NUM_BUTTONS; i++){
+		  if(buttonsPressed[buttonF2]){
+			  curGame = setNextGame(curGame);
+			  setTimerPeriod(tickTimer, curGame->tickMs);
+			  tickTimer->Instance->CNT = 0;
+			  handleTimerTick();
+			  continue;
+		  }
+
+	 	  for(int i = 0; i < buttonF1; i++){
 	 		  if(buttonsPressed[i]){
+
 	 			  enum gameSignal sig = curGame->handlePlayerInput(buttonBindings[i]);
 	 			  setDisplayFromBuf(curBoard);
 	 			  dataRdy = 0;
