@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define NUM_DISPLAYS 2
+
 void initDisplay();
 void setDisplay(uint8_t *toDisplay);
 void setDisplayFromBuf(int *buf);
