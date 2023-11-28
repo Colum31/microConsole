@@ -2,5 +2,4 @@ Debug/
 Drivers/
 Core/Startup
 .settings/
-STM32G431RBTX_FLASH.ld
 mTetrisPort Debug.launch
