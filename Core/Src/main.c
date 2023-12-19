@@ -57,7 +57,8 @@ int gameOverFlag = 0;
 int linePos = 0;
 
 struct game *curGame;
-int curBoard[BOARDSIZE];
+uint8_t curBoard[BOARDSIZE];
+uint8_t curGameBuffer[BOARDSIZE];
 
 TIM_HandleTypeDef *tickTimer = &htim14;
 TIM_HandleTypeDef *buttonTimer = &htim16;
@@ -144,7 +145,7 @@ int main(void)
   MX_TIM16_Init();
   MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
-  curGame = initGameStructs(&curBoard);
+  curGame = initGameStructs(&curBoard, &curGameBuffer);
   setGame(curGame);
 
   initDisplay();

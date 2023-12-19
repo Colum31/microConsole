@@ -10,11 +10,11 @@
 #include "buttonDriver.h"
 
 struct buttonState{
-	int buttonPin;
+	uint8_t buttonPin;
 	GPIO_TypeDef * buttonGPIOPort;
-	int buttonPrevState;
-	int buttonRepeatPressThreshold;
-	int buttonRepeatPresses;
+	uint8_t buttonPrevState;
+	uint8_t buttonRepeatPressThreshold;
+	uint8_t buttonRepeatPresses;
 };
 
 struct buttonState drivenButtons[NUM_BUTTONS];
@@ -56,12 +56,15 @@ int readButtonState(int buttonNum){
 	}
 
 	// Button being held down
-	if(curButtonState->buttonRepeatPresses == curButtonState->buttonRepeatPressThreshold){
-			curButtonState->buttonRepeatPresses = 0;
-			curButtonState->buttonRepeatPressThreshold = REPEAT_BUTTON_DELAY_HELD;
-			return 1;
-	}else{
-			curButtonState->buttonRepeatPresses += 1;
+	if(buttonReadout == GPIO_PIN_RESET && curButtonState->buttonPrevState == GPIO_PIN_RESET){
+			curButtonState->buttonRepeatPresses++;
+
+			if(curButtonState->buttonRepeatPresses == curButtonState->buttonRepeatPressThreshold){
+				curButtonState->buttonRepeatPresses = 0;
+				curButtonState->buttonRepeatPressThreshold = REPEAT_BUTTON_DELAY_HELD;
+				return 1;
+			}
+			return 0;
 	}
 
 	return 0;
