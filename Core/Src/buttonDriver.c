@@ -10,17 +10,17 @@
 #include "buttonDriver.h"
 
 struct buttonState{
-	int buttonPin;
+	uint16_t buttonPin;
 	GPIO_TypeDef * buttonGPIOPort;
-	int buttonPrevState;
-	int buttonRepeatPressThreshold;
-	int buttonRepeatPresses;
+	uint8_t buttonPrevState;
+	uint8_t buttonRepeatPressThreshold;
+	uint8_t buttonRepeatPresses;
 };
 
 struct buttonState drivenButtons[NUM_BUTTONS];
 
 void initDrivenButtons(){
-	int buttonPins[NUM_BUTTONS] = {ButtonUp_Pin, ButtonLeft_Pin, ButtonMid_Pin, ButtonRight_Pin, ButtonDown_Pin, ButtonF1_Pin, ButtonF2_Pin};
+	uint16_t buttonPins[NUM_BUTTONS] = {ButtonUp_Pin, ButtonLeft_Pin, ButtonMid_Pin, ButtonRight_Pin, ButtonDown_Pin, ButtonF1_Pin, ButtonF2_Pin};
 	GPIO_TypeDef * buttonGPIOPorts[NUM_BUTTONS] = {ButtonUp_GPIO_Port, ButtonLeft_GPIO_Port, ButtonMid_GPIO_Port, ButtonRight_GPIO_Port, ButtonDown_GPIO_Port, ButtonF1_GPIO_Port, ButtonF2_GPIO_Port};
 
 
@@ -56,12 +56,15 @@ int readButtonState(int buttonNum){
 	}
 
 	// Button being held down
-	if(curButtonState->buttonRepeatPresses == curButtonState->buttonRepeatPressThreshold){
-			curButtonState->buttonRepeatPresses = 0;
-			curButtonState->buttonRepeatPressThreshold = REPEAT_BUTTON_DELAY_HELD;
-			return 1;
-	}else{
-			curButtonState->buttonRepeatPresses += 1;
+	if(buttonReadout == GPIO_PIN_RESET && curButtonState->buttonPrevState == GPIO_PIN_RESET){
+			curButtonState->buttonRepeatPresses++;
+
+			if(curButtonState->buttonRepeatPresses == curButtonState->buttonRepeatPressThreshold){
+				curButtonState->buttonRepeatPresses = 0;
+				curButtonState->buttonRepeatPressThreshold = REPEAT_BUTTON_DELAY_HELD;
+				return 1;
+			}
+			return 0;
 	}
 
 	return 0;

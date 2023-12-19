@@ -35,7 +35,7 @@ void setDisplay(uint8_t *toDisplay){
 	memcpy(displayBuf, toDisplay, DISPLAY_Y * dataSize);
 }
 
-uint8_t buffToLine(int *buf){
+uint8_t buffToLine(uint8_t *buf){
 	uint8_t result = 0;
 
 	for(int i = 0; i < LINE_LENGTH; i++){
@@ -47,7 +47,7 @@ uint8_t buffToLine(int *buf){
 	return result;
 }
 
-void setDisplayFromBuf(int *buf){
+void setDisplayFromBuf(uint8_t *buf){
 	for(int i = 0; i < DISPLAY_Y; i++){
 		displayBuf[i] = buffToLine(&buf[LINE_LENGTH * i]);
 	}

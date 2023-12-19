@@ -15,7 +15,7 @@
 
 void initDisplay();
 void setDisplay(uint8_t *toDisplay);
-void setDisplayFromBuf(int *buf);
+void setDisplayFromBuf(uint8_t *buf);
 
 void displayInterruptHandler();
 
