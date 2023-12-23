@@ -124,6 +124,12 @@ void handleTimerTick(){
 bool handleConsoleButtons(int *buttonsPressed){
 
 	if(buttonsPressed[buttonF2]){
+
+		if(gamePaused){
+			gamePaused = false;
+			HAL_TIM_Base_Start_IT(tickTimer);
+		}
+
 		curGame = setNextGame(curGame);
 		setTimerPeriod(tickTimer, curGame->tickMs);
 		tickTimer->Instance->CNT = 0;
