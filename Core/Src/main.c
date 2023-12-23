@@ -21,6 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
+
 #include "displayDriver.h"
 #include "buttonDriver.h"
 #include "gameWrapper.h"
@@ -56,6 +58,8 @@ char buttonBindings[NUM_BUTTONS] = {BINDING_UP, BINDING_LEFT, BINDING_ROTATE_RIG
 int gameOverFlag = 0;
 int linePos = 0;
 
+bool gamePaused = false;
+
 struct game *curGame;
 uint8_t curBoard[BOARDSIZE];
 uint8_t curGameBuffer[BOARDSIZE];
@@ -88,28 +92,75 @@ void setTimerPeriod(TIM_HandleTypeDef *timerToSet, int periodMs){
 	__HAL_TIM_SET_AUTORELOAD(timerToSet, countPeriod - 1);
 }
 
+void gameOverHandler(){
+	bool animationDone = curGame->gameOverAnimation();
+	setDisplayFromBuf(curBoard);
+
+	if(!animationDone){
+		return;
+	}
+
+	setGame(curGame);
+	setTimerPeriod(tickTimer, curGame->tickMs);
+	gameOverFlag = 0;
+}
 
 void handleTimerTick(){
 	if(gameOverFlag){
-
-		if(!curGame->gameOverAnimation()){
-			setDisplayFromBuf(curBoard);
-		}else{
-			setDisplayFromBuf(curBoard);
-			setGame(curGame);
-			setTimerPeriod(tickTimer, curGame->tickMs);
-			gameOverFlag = 0;
-		}
-				return;
+		gameOverHandler();
+		return;
 	}
 
-	if(curGame->handleTick() == gameOver){
+	enum gameSignal signal = curGame->handleTick();
+
+	if(signal == gameOver){
 		gameOverFlag = 1;
 		setTimerPeriod(tickTimer, GAME_OVER_MS);
 	}
 
 	setDisplayFromBuf(curBoard);
 }
+
+bool handleConsoleButtons(int *buttonsPressed){
+
+	if(buttonsPressed[buttonF2]){
+		curGame = setNextGame(curGame);
+		setTimerPeriod(tickTimer, curGame->tickMs);
+		tickTimer->Instance->CNT = 0;
+		handleTimerTick();
+		return true;
+	}
+
+	if(buttonsPressed[buttonF1]){
+
+		if(gamePaused){
+			gamePaused = false;
+			HAL_TIM_Base_Start_IT(tickTimer);
+		}else{
+			gamePaused = true;
+			HAL_TIM_Base_Stop_IT(tickTimer);
+		}
+
+		return true;
+	}
+
+
+	return false;
+}
+
+void handleGameButtons(){
+	for(int i = 0; i < NUM_BUTTONS; i++){
+		if(buttonsPressed[i]){
+			enum gameSignal sig = curGame->handlePlayerInput(buttonBindings[i]);
+
+			if(sig == skipTimer){
+				tickTimer->Instance->CNT = 0;
+				handleTimerTick();
+		 	}
+		}
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -145,6 +196,7 @@ int main(void)
   MX_TIM16_Init();
   MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
+
   curGame = initGameStructs(&curBoard, &curGameBuffer);
   setGame(curGame);
 
@@ -169,29 +221,14 @@ int main(void)
 		  continue;
 	  }
 
-	 for(int i = 0; i < NUM_BUTTONS; i++){
-		 if(buttonsPressed[i]){
+	  bool consoleButtonsPressed = handleConsoleButtons(buttonsPressed);
 
-			 if(i == buttonF1 || i == buttonF2){
-				 curGame = setNextGame(curGame);
-				 setTimerPeriod(tickTimer, curGame->tickMs);
-				 tickTimer->Instance->CNT = 0;
-				 handleTimerTick();
-				 continue;
-			 }
+	  if(!consoleButtonsPressed && !gamePaused){
+		  handleGameButtons();
+	  }
 
-			 enum gameSignal sig = curGame->handlePlayerInput(buttonBindings[i]);
-
-			 if(sig == skipTimer){
-				 tickTimer->Instance->CNT = 0;
-				 handleTimerTick();
-	 		}
-	 	}
-	 }
-
-	 setDisplayFromBuf(curBoard);
-	 dataRdy = 0;
-
+	  setDisplayFromBuf(curBoard);
+	  dataRdy = 0;
   }
   /* USER CODE END 3 */
 }
