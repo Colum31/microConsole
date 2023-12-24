@@ -77,11 +77,6 @@ static void MX_TIM14_Init(void);
 static void MX_TIM16_Init(void);
 static void MX_TIM17_Init(void);
 /* USER CODE BEGIN PFP */
-
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
 void setTimerPeriod(TIM_HandleTypeDef *timerToSet, int periodMs){
 	uint32_t baseClockFreq = HAL_RCC_GetHCLKFreq();
 	uint32_t frequencyMs = 1000 / periodMs;
@@ -92,6 +87,56 @@ void setTimerPeriod(TIM_HandleTypeDef *timerToSet, int periodMs){
 	__HAL_TIM_SET_AUTORELOAD(timerToSet, countPeriod - 1);
 }
 
+void stopTimer(TIM_HandleTypeDef *timer){
+	HAL_TIM_Base_Stop_IT(timer);
+}
+
+void startTimer(TIM_HandleTypeDef *timer){
+	HAL_TIM_Base_Start_IT(timer);
+}
+
+void resetTimer(TIM_HandleTypeDef *timer){
+	timer->Instance->CNT = 0;
+}
+
+void pauseGame(){
+
+	if(gamePaused){
+		return;
+	}
+
+	gamePaused = true;
+	stopTimer(tickTimer);
+}
+
+void unpauseGame(){
+	if(!gamePaused){
+		return;
+	}
+
+	gamePaused = false;
+	startTimer(tickTimer);
+}
+
+void toggleGamePaused(){
+	if(gamePaused){
+		unpauseGame();
+	}else{
+		pauseGame();
+	}
+}
+
+void setConsoleGame(struct game* nextGame){
+	unpauseGame();
+	setGame(nextGame);
+
+	curGame = nextGame;
+
+	setTimerPeriod(tickTimer, curGame->tickMs);
+	resetTimer(tickTimer);
+}
+
+
 void gameOverHandler(){
 	bool animationDone = curGame->gameOverAnimation();
 	setDisplayFromBuf(curBoard);
@@ -100,7 +145,7 @@ void gameOverHandler(){
 		return;
 	}
 
-	setGame(curGame);
+	setConsoleGame(curGame);
 	setTimerPeriod(tickTimer, curGame->tickMs);
 	gameOverFlag = 0;
 }
@@ -124,29 +169,12 @@ void handleTimerTick(){
 bool handleConsoleButtons(int *buttonsPressed){
 
 	if(buttonsPressed[buttonF2]){
-
-		if(gamePaused){
-			gamePaused = false;
-			HAL_TIM_Base_Start_IT(tickTimer);
-		}
-
-		curGame = setNextGame(curGame);
-		setTimerPeriod(tickTimer, curGame->tickMs);
-		tickTimer->Instance->CNT = 0;
-		handleTimerTick();
+		setConsoleGame(curGame->nextGame);
 		return true;
 	}
 
 	if(buttonsPressed[buttonF1]){
-
-		if(gamePaused){
-			gamePaused = false;
-			HAL_TIM_Base_Start_IT(tickTimer);
-		}else{
-			gamePaused = true;
-			HAL_TIM_Base_Stop_IT(tickTimer);
-		}
-
+		toggleGamePaused();
 		return true;
 	}
 
@@ -154,18 +182,23 @@ bool handleConsoleButtons(int *buttonsPressed){
 	return false;
 }
 
-void handleGameButtons(){
+void handleGameButtons(int *buttonsPressed){
 	for(int i = 0; i < NUM_BUTTONS; i++){
 		if(buttonsPressed[i]){
 			enum gameSignal sig = curGame->handlePlayerInput(buttonBindings[i]);
 
 			if(sig == skipTimer){
-				tickTimer->Instance->CNT = 0;
+				resetTimer(tickTimer);
 				handleTimerTick();
 		 	}
 		}
 	}
 }
+
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
@@ -204,7 +237,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   curGame = initGameStructs(&curBoard, &curGameBuffer);
-  setGame(curGame);
+  setConsoleGame(curGame);
+
 
   initDisplay();
   initDrivenButtons();
@@ -230,7 +264,7 @@ int main(void)
 	  bool consoleButtonsPressed = handleConsoleButtons(buttonsPressed);
 
 	  if(!consoleButtonsPressed && !gamePaused){
-		  handleGameButtons();
+		  handleGameButtons(buttonsPressed);
 	  }
 
 	  setDisplayFromBuf(curBoard);
