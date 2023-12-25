@@ -9,6 +9,9 @@
 #include "main.h"
 #include "buttonDriver.h"
 
+#include "timers.h"
+#include "consoleSettings.h"
+
 struct buttonState{
 	uint16_t buttonPin;
 	GPIO_TypeDef * buttonGPIOPort;
@@ -18,6 +21,10 @@ struct buttonState{
 };
 
 struct buttonState drivenButtons[NUM_BUTTONS];
+
+void initButtonTimer(TIM_HandleTypeDef *timer){
+	setTimerPeriod(timer, 1000.0/BUTTONS_POLL_RATE_HZ);
+}
 
 void initDrivenButtons(){
 	uint16_t buttonPins[NUM_BUTTONS] = {ButtonUp_Pin, ButtonLeft_Pin, ButtonMid_Pin, ButtonRight_Pin, ButtonDown_Pin, ButtonF1_Pin, ButtonF2_Pin};

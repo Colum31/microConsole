@@ -13,7 +13,14 @@
 
 #define NUM_DISPLAYS 2
 
+#define LINE_LENGTH 8
+#define LINES_PER_DISPLAY 8
+
+#define DISPLAY_X 8
+#define DISPLAY_Y 16
+
 void initDisplay();
+void initDisplayTimer(TIM_HandleTypeDef *timer);
 void setDisplay(uint8_t *toDisplay);
 void setDisplayFromBuf(uint8_t *buf);
 

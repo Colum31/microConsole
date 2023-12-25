@@ -14,6 +14,7 @@
 
 enum buttons{buttonUp, buttonLeft, buttonMid, buttonRight, buttonDown, buttonF1, buttonF2};
 
+void initButtonTimer(TIM_HandleTypeDef *timer);
 void initDrivenButtons();
 void readButtonAllStates(int *buttonStates);
 

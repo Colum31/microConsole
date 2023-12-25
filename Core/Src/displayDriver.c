@@ -8,15 +8,10 @@
 #include "stm32f0xx_hal.h"
 #include "string.h"
 
+#include "consoleSettings.h"
 #include "displayDriver.h"
+#include "timers.h"
 #include "main.h"
-
-
-#define LINE_LENGTH 8
-#define LINES_PER_DISPLAY 8
-
-#define DISPLAY_X 8
-#define DISPLAY_Y 16
 
 int linePosDisplays = 0;
 
@@ -25,6 +20,12 @@ extern SPI_HandleTypeDef hspi1;
 uint8_t displayBuf[DISPLAY_Y];
 int dataSize = sizeof(uint8_t);
 
+void initDisplayTimer(TIM_HandleTypeDef *timer){
+	int totalRefreshRate = DISPLAY_REFRESH_RATE_HZ * LINES_PER_DISPLAY;
+	double refreshPeriodMs = 1000.0/totalRefreshRate;
+
+	setTimerPeriod(timer, refreshPeriodMs);
+}
 
 void initDisplay(){
 	memset(displayBuf, 0, DISPLAY_Y * dataSize);

@@ -53,7 +53,6 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-void setTimerPeriod(TIM_HandleTypeDef *timerToSet, int periodMs);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
