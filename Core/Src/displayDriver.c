@@ -62,12 +62,13 @@ bool drawLine(int display, uint8_t line, uint8_t lineNum){
 	uint8_t lineSelect = 1 << lineNum;
 	uint8_t lineContent = ~line;
 
+	uint16_t combined = (uint16_t) lineSelect << 8 | (uint16_t) lineContent;
+
 	GPIO_TypeDef *GPIO_Ports[NUM_DISPLAYS] = {SPI1_CS1_GPIO_Port, SPI1_CS2_GPIO_Port};
 	uint16_t GPIO_Pins[NUM_DISPLAYS] = {SPI1_CS1_Pin, SPI1_CS2_Pin};
 
 	HAL_GPIO_WritePin(GPIO_Ports[display], GPIO_Pins[display], GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi1, &lineSelect, 1, 100);
-	HAL_SPI_Transmit(&hspi1, &lineContent, 1, 100);
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) &combined, 1, 100);
 	HAL_GPIO_WritePin(GPIO_Ports[display], GPIO_Pins[display], GPIO_PIN_SET);
 
 	return true;
