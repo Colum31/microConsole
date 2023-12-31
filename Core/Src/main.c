@@ -55,6 +55,7 @@ TIM_HandleTypeDef htim17;
 
 /* USER CODE BEGIN PV */
 uint8_t dataRdy = 0;
+bool timerTick = false;
 int buttonsPressed[NUM_BUTTONS];
 char buttonBindings[NUM_BUTTONS] = {BINDING_UP, BINDING_LEFT, BINDING_ROTATE_RIGHT, BINDING_RIGHT, BINDING_DOWN};
 int gameOverFlag = 0;
@@ -244,6 +245,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  if(timerTick){
+		  handleTimerTick();
+		  timerTick = false;
+	  }
+
+
 	  if(!dataRdy || gameOverFlag){
 		  enableSleepMode();
 		  continue;
@@ -483,7 +491,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	}
 
 	if(htim == tickTimer){
-		handleTimerTick();
+		timerTick = true;
 	}
 
 	if(htim == buttonTimer){
