@@ -24,6 +24,7 @@
 #include <stdbool.h>
 
 #include "displayDriver.h"
+#include "displayColorDriver.h"
 #include "buttonDriver.h"
 #include "gameWrapper.h"
 #include "timers.h"
@@ -222,6 +223,7 @@ int main(void)
 
   initDisplayTimer(displayTimer);
   initDisplay();
+  initColorDisplay();
   displayInterruptHandler();
 
   initButtonTimer(buttonTimer);
