@@ -53,7 +53,7 @@ TIM_HandleTypeDef htim16;
 TIM_HandleTypeDef htim17;
 
 /* USER CODE BEGIN PV */
-uint8_t dataRdy = 0;
+uint8_t buttonsRead = 0;
 bool timerTick = false;
 int buttonsPressed[NUM_BUTTONS];
 char buttonBindings[NUM_BUTTONS] = {BINDING_UP, BINDING_LEFT, BINDING_ROTATE_RIGHT, BINDING_RIGHT, BINDING_DOWN};
@@ -249,20 +249,21 @@ int main(void)
 		  timerTick = false;
 	  }
 
+	  if(buttonsRead && !gameOverFlag){
+		  bool consoleButtonsPressed = handleConsoleButtons(buttonsPressed);
 
-	  if(!dataRdy || gameOverFlag){
-		  enableSleepMode();
-		  continue;
+		  if(!consoleButtonsPressed && !gamePaused){
+			  handleGameButtons(buttonsPressed);
+		  }
+
+		  setDisplayFromBuf(curBoard);
+		  buttonsRead = 0;
 	  }
 
-	  bool consoleButtonsPressed = handleConsoleButtons(buttonsPressed);
 
-	  if(!consoleButtonsPressed && !gamePaused){
-		  handleGameButtons(buttonsPressed);
+	  while(!buttonsRead){
 	  }
 
-	  setDisplayFromBuf(curBoard);
-	  dataRdy = 0;
   }
   /* USER CODE END 3 */
 }
@@ -456,7 +457,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 	if(htim == buttonTimer){
 		readButtonAllStates(buttonsPressed);
-		dataRdy = 1;
+		buttonsRead = 1;
 	}
 }
 /* USER CODE END 4 */
