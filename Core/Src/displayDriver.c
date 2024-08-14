@@ -10,12 +10,11 @@
 
 #include "consoleSettings.h"
 #include "displayDriver.h"
+#include "regLib.h"
 #include "timers.h"
 #include "main.h"
 
 int linePosDisplays = 0;
-
-extern SPI_HandleTypeDef hspi1;
 
 uint16_t (*frontBuf)[DISPLAY_Y];
 
@@ -30,6 +29,11 @@ void initDisplayTimer(TIM_HandleTypeDef *timer){
 }
 
 void initDisplay(){
+
+	configureSPIGPIO();
+	ENABLE_SPI1_RCC_CLOCK;
+	configureSPI();
+
 	memset(transmitBuf, 0, DISPLAY_Y * sizeof(uint16_t));
 	frontBuf = &transmitBuf;
 
@@ -78,16 +82,12 @@ void setDisplayFromBuf(uint8_t *buf){
 	frontBuf = backBuf;
 }
 
-bool drawLine(int display, uint8_t lineNum){
-	uint16_t toSend = (*frontBuf)[lineNum + 8*display];
+bool drawLine(uint8_t lineNum){
+	uint16_t toSend = (*frontBuf)[lineNum];
+	transmitSPI(toSend, SPI1_CS1_GPIO_Port, SPI1_CS1_Pin);
 
-	GPIO_TypeDef *GPIO_Ports[NUM_DISPLAYS] = {SPI1_CS1_GPIO_Port, SPI1_CS2_GPIO_Port};
-	uint16_t GPIO_Pins[NUM_DISPLAYS] = {SPI1_CS1_Pin, SPI1_CS2_Pin};
-
-	HAL_GPIO_WritePin(GPIO_Ports[display], GPIO_Pins[display], GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi1, (uint8_t*) &toSend, 1, 100);
-	HAL_GPIO_WritePin(GPIO_Ports[display], GPIO_Pins[display], GPIO_PIN_SET);
-
+	toSend = (*frontBuf)[lineNum + 8];
+	transmitSPI(toSend, SPI1_CS2_GPIO_Port, SPI1_CS2_Pin);
 	return true;
 }
 
@@ -98,7 +98,6 @@ void displayInterruptHandler(){
 		linePosDisplays = 0;
 	}
 
-	drawLine(0, linePosDisplays);
-	drawLine(1, linePosDisplays);
+	drawLine(linePosDisplays);
 	linePosDisplays++;
 }

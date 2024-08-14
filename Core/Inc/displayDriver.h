@@ -24,6 +24,8 @@ void initDisplayTimer(TIM_HandleTypeDef *timer);
 void setDisplay(uint8_t *toDisplay);
 void setDisplayFromBuf(uint8_t *buf);
 
+void writeToDisplayComplete();
+
 void displayInterruptHandler();
 
 
