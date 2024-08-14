@@ -30,9 +30,8 @@ void initDisplayTimer(TIM_HandleTypeDef *timer){
 
 void initDisplay(){
 
-	configureSPIGPIO();
-	ENABLE_SPI1_RCC_CLOCK;
-	configureSPI();
+	configureSPISimple();
+	enableSPI();
 
 	memset(transmitBuf, 0, DISPLAY_Y * sizeof(uint16_t));
 	frontBuf = &transmitBuf;
