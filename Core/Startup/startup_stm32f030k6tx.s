@@ -148,7 +148,7 @@ g_pfnVectors:
   .word  EXTI4_15_IRQHandler               /* EXTI Line 4 to 15            */
   .word  0                                 /* Reserved                     */
   .word  DMA1_Channel1_IRQHandler          /* DMA1 Channel 1               */
-  .word  DMA1_Channel2_3_IRQHandler        /* DMA1 Channel 2 and Channel 3 */
+  .word  DMA1_Channel2_3_IRQHandler_skibidi        /* DMA1 Channel 2 and Channel 3 */
   .word  DMA1_Channel4_5_IRQHandler        /* DMA1 Channel 4 and Channel 5 */
   .word  ADC1_IRQHandler                   /* ADC1                         */
   .word  TIM1_BRK_UP_TRG_COM_IRQHandler    /* TIM1 Break, Update, Trigger and Commutation */

@@ -12,13 +12,13 @@
 
 #define NUM_COLORS 8
 
-enum baseColor {colorRed = 0x00010000,
-				colorGreen = 0x00000100,
-				colorBlue = 0x00000001,
-				colorYellow = 0x00010100,
-				colorCyan	= 0x00000101,
-				colorMagenta = 0x00010001,
-				colorWhite = 0x00010101,
+enum baseColor {colorRed = 0x00030000,
+				colorGreen = 0x00000300,
+				colorBlue = 0x00000003,
+				colorYellow = 0x00030300,
+				colorCyan	= 0x00000303,
+				colorMagenta = 0x00030003,
+				colorWhite = 0x00030303,
 				colorNone	= 0x0,
 			};
 

@@ -23,7 +23,6 @@
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 
-#include "displayDriver.h"
 #include "displayColorDriver.h"
 #include "buttonDriver.h"
 #include "gameWrapper.h"
@@ -165,9 +164,12 @@ bool handleConsoleButtons(int *buttonsPressed){
 	return false;
 }
 
-void handleGameButtons(int *buttonsPressed){
+bool handleGameButtons(int *buttonsPressed){
+	bool gameButtonsPressed = false;
+
 	for(int i = 0; i < NUM_BUTTONS; i++){
 		if(buttonsPressed[i]){
+			gameButtonsPressed = true;
 			enum gameSignal sig = curGame->handlePlayerInput(buttonBindings[i]);
 
 			if(sig == skipTimer){
@@ -176,6 +178,8 @@ void handleGameButtons(int *buttonsPressed){
 		 	}
 		}
 	}
+
+	return gameButtonsPressed;
 }
 
 /* USER CODE END PFP */
@@ -221,10 +225,7 @@ int main(void)
   curGame = initGameStructs(&curBoard, &curGameBuffer);
   setConsoleGame(curGame);
 
-  initDisplayTimer(displayTimer);
-  initDisplay();
   initColorDisplay();
-  displayInterruptHandler();
 
   initButtonTimer(buttonTimer);
   initDrivenButtons();
@@ -251,12 +252,16 @@ int main(void)
 
 	  if(buttonsRead && !gameOverFlag){
 		  bool consoleButtonsPressed = handleConsoleButtons(buttonsPressed);
+		  bool gameButtonsPressed = false;
 
 		  if(!consoleButtonsPressed && !gamePaused){
-			  handleGameButtons(buttonsPressed);
+			  gameButtonsPressed = handleGameButtons(buttonsPressed);
 		  }
 
-		  setDisplayFromBuf(curBoard);
+		  if(gameButtonsPressed || consoleButtonsPressed){
+			  setDisplayFromBuf(curBoard);
+		  }
+
 		  buttonsRead = 0;
 	  }
 
@@ -283,7 +288,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL5;
+  RCC_OscInitStruct.PLL.PREDIV = RCC_PREDIV_DIV1;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -293,7 +301,7 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
 
@@ -410,29 +418,19 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, SPI1_CS1_Pin|SPI1_CS2_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pins : SPI1_CS1_Pin SPI1_CS2_Pin */
-  GPIO_InitStruct.Pin = SPI1_CS1_Pin|SPI1_CS2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : ButtonF1_Pin ButtonLeft_Pin ButtonDown_Pin ButtonMid_Pin
+  /*Configure GPIO pins : ButtonF1_Pin ButtonLeft_Pin ButtonMid_Pin ButtonDown_Pin
                            ButtonUp_Pin */
-  GPIO_InitStruct.Pin = ButtonF1_Pin|ButtonLeft_Pin|ButtonDown_Pin|ButtonMid_Pin
+  GPIO_InitStruct.Pin = ButtonF1_Pin|ButtonLeft_Pin|ButtonMid_Pin|ButtonDown_Pin
                           |ButtonUp_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ButtonF2_Pin ButtonRight_Pin */
-  GPIO_InitStruct.Pin = ButtonF2_Pin|ButtonRight_Pin;
+  /*Configure GPIO pins : ButtonRight_Pin ButtonF2_Pin */
+  GPIO_InitStruct.Pin = ButtonRight_Pin|ButtonF2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -445,11 +443,6 @@ static void MX_GPIO_Init(void)
 
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-
-	if(htim == displayTimer){
-		displayInterruptHandler();
-
-	}
 
 	if(htim == tickTimer){
 		timerTick = true;
