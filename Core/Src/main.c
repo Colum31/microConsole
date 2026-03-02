@@ -190,6 +190,7 @@ void handleGameButtons(int *buttonsPressed){
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
